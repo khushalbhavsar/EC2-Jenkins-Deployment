@@ -1,0 +1,30 @@
+# Ignore terraform files
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.backup
+.terraform/
+.terraform.lock.hcl
+.terraform.log
+
+# Ignore SSH key
+jenkins.pem
+
+# Editor/OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.sh~
+.env
+
+# Jenkins
+builds
+indexing
+jobs/**/workspace
+!jobs
+!/*.xml
+!/.gitignore
+jobs/**
+!jobs/**/
+!config.xml
