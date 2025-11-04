@@ -1,8 +1,8 @@
 # EC2 + Jenkins (Terraform + Docker) — Quick Start
 
-This repository contains Terraform configuration and helper scripts to provision an EC2 instance and run Jenkins (either via the OS package or Docker). The instructions below provide a concise, step-by-step workflow: prerequisites, deploy (Terraform + script), optional Docker-based Jenkins, access, and cleanup.
+This repository contains Terraform configuration and helper scripts to provision an EC2 instance and run Jenkins (either via Docker or the native package). The instructions below provide a concise, step-by-step workflow: prerequisites, deploy (Terraform + script), optional Docker-based Jenkins, access, and cleanup.
 
-Repo contents (important files)
+## Repo contents (important files)
 
 * `main.tf`, `variables.tf`, `outputs.tf` — Terraform configuration for EC2 and related resources
 * `deploy.sh` — helper script to finalize deployment on the instance (bootstrap)
@@ -30,16 +30,16 @@ Open ports in the instance Security Group (or LB) as appropriate:
 
 1. Clone this repository locally:
 
-```
+```bash
 git clone https://github.com/khushalbhavsar/EC2-Jenkins-Deployment.git
 cd EC2-Jenkins-Deployment
 ```
 
-2. Inspect and optionally edit `variables.tf` to set region, instance type, key pair name, and other variables.
+1. Inspect and optionally edit `variables.tf` to set region, instance type, key pair name, and other variables.
 
-3. Initialize and apply Terraform (creates EC2, security group, outputs):
+1. Initialize and apply Terraform (creates EC2, security group, outputs):
 
-```
+```bash
 terraform init
 terraform plan -out plan.tfplan
 terraform apply "plan.tfplan"
@@ -47,15 +47,15 @@ terraform apply "plan.tfplan"
 
 After `apply` completes, note the public IP or DNS in the Terraform outputs. You can view outputs with:
 
-```
+```bash
 terraform output
 ```
 
-4. SSH to the created EC2 instance (example):
+1. SSH to the created EC2 instance (example):
 
 On macOS/Linux:
 
-```
+```bash
 chmod 400 path/to/jenkins.pem
 ssh -i path/to/jenkins.pem ec2-user@<EC2_PUBLIC_IP>
 ```
@@ -67,9 +67,9 @@ On Windows (PowerShell):
 ssh -i C:\\path\\to\\jenkins.pem ec2-user@<EC2_PUBLIC_IP>
 ```
 
-5. (Optional) Run the included bootstrap script on the instance:
+1. (Optional) Run the included bootstrap script on the instance:
 
-```
+```bash
 chmod +x deploy.sh
 ./deploy.sh
 ```
@@ -84,7 +84,7 @@ Execute the following commands on the EC2 instance after SSH.
 
 1. Update packages and install Docker
 
-```
+```bash
 sudo yum update -y
 sudo yum install -y docker
 sudo systemctl start docker
@@ -92,15 +92,15 @@ sudo systemctl enable docker
 sudo docker --version
 ```
 
-2. (Optional) Login to Docker Hub if you need private images
+1. (Optional) Login to Docker Hub if you need private images
 
-```
+```bash
 sudo docker login
 ```
 
-3. Pull and run Jenkins (example using JDK21 image)
+1. Pull and run Jenkins (example using JDK21 image)
 
-```
+```bash
 sudo docker pull jenkins/jenkins:jdk21
 sudo docker run -d --name jenkins \
   -p 8080:8080 -p 50000:50000 \
@@ -108,15 +108,15 @@ sudo docker run -d --name jenkins \
   jenkins/jenkins:jdk21
 ```
 
-4. Get the initial admin password
+1. Get the initial admin password
 
-```
+```bash
 sudo docker exec -it jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 ```
 
-5. Open Jenkins in your browser:
+1. Open Jenkins in your browser:
 
-```
+```text
 http://<EC2_PUBLIC_IP>:8080
 ```
 
@@ -128,7 +128,7 @@ Use the password from step 4 to complete the first-time setup.
 
 If you prefer to install the native Jenkins package on Amazon Linux/RHEL:
 
-```
+```bash
 sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
 sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
 sudo yum upgrade -y
@@ -139,7 +139,7 @@ sudo systemctl status jenkins
 
 Retrieve the initial password:
 
-```
+```bash
 sudo cat /var/lib/jenkins/secrets/initialAdminPassword
 ```
 
@@ -151,7 +151,7 @@ Then browse to `http://<EC2_PUBLIC_IP>:8080`.
 
 * Add the `jenkins` user to the `docker` group if you plan to run Docker builds from Jenkins:
 
-```
+```bash
 sudo usermod -aG docker jenkins
 sudo systemctl restart jenkins
 ```
@@ -164,14 +164,14 @@ sudo systemctl restart jenkins
 
 Remove Docker container (if used):
 
-```
+```bash
 sudo docker rm -f jenkins || true
 sudo docker volume rm jenkins_home || true
 ```
 
 Destroy Terraform-managed infrastructure from your local machine:
 
-```
+```bash
 terraform destroy
 ```
 
@@ -183,7 +183,7 @@ terraform destroy
 * If Jenkins UI is unreachable, verify that the instance's security group allows port 8080 and the Docker container is running (`sudo docker ps`).
 * Check logs:
 
-```
+```bash
 sudo docker logs jenkins         # container logs
 sudo journalctl -u jenkins -f  # systemd-installed Jenkins
 ```
